@@ -3,7 +3,6 @@ import Banner from './components/Banner';
 import Movies from './components/Movies';
 import Navbar from './components/Navbar';
 import Favourites from './components/Favourites';
-import Pagination from './components/Pagination';
 import {BrowserRouter ,Routes , Route} from 'react-router-dom';
 
 function App() {
@@ -15,7 +14,7 @@ function App() {
         <>
           <Banner/>
           <Movies/>
-          <Pagination/>
+         
        </>
        }/>
        <Route path="/fav" element={
