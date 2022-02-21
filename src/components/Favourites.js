@@ -181,17 +181,19 @@ function Favourites() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredMovies.map((person) => (
-                  <tr key={person.email}>
+                  <tr key={person.title}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-50 w-100">
                           <img className="h-20 w-100 " src={`https://image.tmdb.org/t/p/original${person.backdrop_path}`} alt="" />
-                          
+                          <div className="text-md text-center mt-3 text-gray-900">{person.title}</div>
                         </div>
-                        <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{person.title}</div>
-                          {/* <div className="text-sm text-gray-500">{person.popularity}</div> */}
-                        </div>
+                       
+                        <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <div className="text-sm text-gray-900">{person.title}</div> */}
+                      {/* <div className="text-sm text-gray-500">{person.popularity}</div> */}
+                    </td>
+                        
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
