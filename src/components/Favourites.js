@@ -16,8 +16,8 @@ function Favourites() {
   const[currPage , setCurrPage] = useState(1);
 
   useEffect(()=>{
-    let oldFav = localStorage.getItem("imdb")||[];
-    oldFav = JSON.parse(oldFav); 
+    let oldFav = localStorage.getItem("imdb");
+    oldFav = JSON.parse(oldFav) || []; 
     setFav([...oldFav]);
   },[])
 

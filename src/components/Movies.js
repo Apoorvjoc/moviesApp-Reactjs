@@ -38,8 +38,8 @@ function Movies() {
         axios.get(`https://api.themoviedb.org/3/trending/movie/week?api_key=ac5c9d5cdba71971cf995cf07aaf8a9f&page=${page}`).then((res)=>{
           // console.table();
           setMovies(res.data.results);
-          let oldMov = localStorage.getItem("imdb")  || [];
-          oldMov = JSON.parse(oldMov)
+          let oldMov = localStorage.getItem("imdb");
+          oldMov = JSON.parse(oldMov) || [];
           setFav([...oldMov]);
       })
        }, 1000);
