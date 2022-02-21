@@ -14,10 +14,14 @@ function Movies() {
         let newArr = [...fav , movie];
         setFav([...newArr])
         console.log(fav);
+
+        localStorage.setItem("imdb" , JSON.stringify(newArr));
     }
 
     const delFav =(movie)=>{
-      fav.filter((obj)=>movie.id != obj.id)
+      let newArr = fav.filter((obj)=>movie.id != obj.id);
+      setFav(newArr)
+      localStorage.setItem("imdb" , JSON.stringify(newArr));
     }
 
     const moveBackward = ()=>{
@@ -34,13 +38,16 @@ function Movies() {
         axios.get(`https://api.themoviedb.org/3/trending/movie/week?api_key=ac5c9d5cdba71971cf995cf07aaf8a9f&page=${page}`).then((res)=>{
           // console.table();
           setMovies(res.data.results);
+          let oldMov = localStorage.getItem("imdb")  || [];
+          oldMov = JSON.parse(oldMov)
+          setFav([...oldMov]);
       })
-       }, 1500);
+       }, 1000);
     },[page])
   return (
     <div className='mb-8'> 
       <div className='mt-8 font-bold text-2xl
-       text-center'>Trending Movies</div>
+       text-center mx-100'>Trending Movies</div>
        {
            
            movies.length == 0 ? 

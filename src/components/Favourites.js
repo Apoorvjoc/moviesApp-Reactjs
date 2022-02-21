@@ -1,34 +1,133 @@
-import React from 'react'
+import React ,{useEffect, useState} from 'react'
 import Pagination from './Pagination'
 
 function Favourites() {
-  const people = [
-    {
-      name: 'Jane Cooper',
-      title: 'Regional Paradigm Technician',
-      department: 'Optimization',
-      role: 'Admin',
-      email: 'jane.cooper@example.com',
-      image:
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60',
-    },
-    // More people...
-  ]
+
+  let genreids = {28:'Action',12:'Adventure',16:'Animation',35:'Comedy',80:'Crime',99:'Documentary',18:'Drama',10751:'Family',14:'Fantasy',36:'History',
+  27:'Horror',10402:'Music',9648:'Mystery',10749:'Romance',878:'Sci-Fi',10770:'TV',53:'Thriller',10752:'War',37:'Western'};
+
+  const[curGen , setCurGen] = useState("All Genres");
+  const[fav , setFav] = useState([]);
+  const[gen , setGen] = useState([]);
+  const[rating , setRating] = useState(0);
+  const[popularity , setPopularity] = useState(0);
+  const[search , setSearch] = useState('');
+  const[rows , setRows] = useState(4);
+  const[currPage , setCurrPage] = useState(1);
+
+  useEffect(()=>{
+    let oldFav = localStorage.getItem("imdb")||[];
+    oldFav = JSON.parse(oldFav); 
+    setFav([...oldFav]);
+  },[])
+
+  useEffect(()=>{
+    let newGenreArr =  fav.map((obj)=>genreids[obj.genre_ids[0]]);
+    // console.log("fav",fav);
+    // console.log("gen",newGenreArr);
+    newGenreArr = new Set(newGenreArr);
+    setGen(["All Genres",...newGenreArr]);
+  } , [fav])
+
+  let delMov = (obj)=>{
+    let newArr = [];
+    newArr = fav.filter((m)=>{
+      return m.id != obj.id 
+    })
+    setFav([...newArr]);
+    localStorage.setItem("imdb" , JSON.stringify(newArr));
+  }
+
+
+  let filteredMovies = curGen == "All Genres" ? fav : 
+    fav.filter((obj)=>{
+        return genreids[obj.genre_ids[0]] == curGen
+    })
+
+    //searching
+    filteredMovies = filteredMovies.filter((movie)=>{
+      let nTitle = movie.title.toLowerCase();
+      return nTitle.includes(search.toLowerCase());
+    })
+
+    //sorting
+    if(rating === 1){
+      filteredMovies = filteredMovies.sort(function(objA , objB){
+        return objA.vote_average - objB.vote_average
+      })
+    }else if(rating === -1){
+      filteredMovies = filteredMovies.sort(function(objA , objB){
+        return objB.vote_average - objA.vote_average
+      })
+    }
+
+    if(popularity === 1){
+      filteredMovies = filteredMovies.sort(function(objA , objB){
+        return objA.popularity - objB.popularity
+      })
+    }else if(popularity === -1){
+      filteredMovies = filteredMovies.sort(function(objA , objB){
+        return objB.popularity - objA.popularity
+      })
+    }
+
+    //pagination
+    let maxPage = Math.ceil(filteredMovies.length/rows);
+    let si = Number((currPage-1)*rows)
+    let ei = Number(si)+Number(rows);
+
+    filteredMovies = filteredMovies.slice(si , ei);
+  
+    let goBack = ()=>{
+      if(currPage>1){
+        setCurrPage(currPage-1)
+      }
+      if(currPage<0){
+        setCurrPage(Math.abs(currPage))
+      }
+    }
+
+    let goAhead = ()=>{
+      if(currPage<maxPage){
+        setCurrPage(currPage+1)
+      }
+    }
+
   return (
     <>
     <div className='mt-4 px-2 flex justify-center flex-wrap space-x-2'>
-      <button className='m-2 text-lg p-1 px-2 bg-blue-400 text-white rounded-xl font-bold'>
-        All Genres
-      </button>
-      <button className='m-2 text-lg p-1 px-2 bg-gray-400 
-      text-white rounded-xl font-bold hover:bg-blue-400'>
-        All Genres
-      </button>
+      {
+        gen.map((obj)=>(
+          <button className={
+            curGen == obj ? 
+            'm-2 text-lg p-1 px-2 bg-blue-400 text-white rounded-xl font-bold' 
+            :
+            'm-2 text-lg p-1 px-2 bg-gray-400 text-white rounded-xl font-bold'
+          }
+          onClick={()=>{setCurGen(obj) ; setCurrPage(1)}}
+          >
+           {obj}
+          </button>
+        ))
+      }
+      
    
     </div>
        <div className='text-center'>
-       <input placeholder='search' type = "text" className='border border-2 p-1 m-2 text-center'/>
-       <input placeholder='row' type = "number" className='border border-2 p-1 m-2 text-center'/>
+       <input placeholder='search' type = "text" 
+       className='border border-2 p-1 m-2 text-center'
+       value={search} onChange={(e)=>{setSearch(e.target.value); setCurrPage(1)}}/>
+
+       <input placeholder='row' type = "number" 
+       className='border border-2 p-1 m-2 text-center'
+       value={rows} onChange={
+         (e)=>{
+           if(e.target.value < 0){
+              setRows(0);
+           }else{
+              setRows(e.target.value);
+           }
+         }}/>
      </div>
 
    <div className='m-4'>
@@ -41,7 +140,7 @@ function Favourites() {
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3  text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     Name
                   </th>
@@ -50,9 +149,9 @@ function Favourites() {
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                    <div className='flex'>
-                   <img src="https://img.icons8.com/ios/24/000000/circled-up.png" className='mr-2 cursor-pointer'/>
+                   <img src="https://img.icons8.com/ios/24/000000/circled-up.png" className='mr-2 cursor-pointer' onClick={()=>{setPopularity(0); setRating(1)}}/>
                     Rating
-                    <img src="https://img.icons8.com/ios/24/000000/circled-down.png" className='mr-2 cursor-pointer'/>
+                    <img src="https://img.icons8.com/ios/24/000000/circled-down.png" className='mr-2 cursor-pointer'onClick={()=>{setPopularity(0); setRating(-1)}}/>
                    </div>
                   </th>
                   <th
@@ -60,9 +159,9 @@ function Favourites() {
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     <div className='flex'>
-                    <img src="https://img.icons8.com/ios/24/000000/circled-up.png" className='mr-2 cursor-pointer'/>
+                    <img src="https://img.icons8.com/ios/24/000000/circled-up.png" className='mr-2 cursor-pointer' onClick={()=>{setRating(0); setPopularity(1)}}/>
                    Popularity
-                    <img src="https://img.icons8.com/ios/24/000000/circled-down.png" className='mr-2 cursor-pointer'/>
+                    <img src="https://img.icons8.com/ios/24/000000/circled-down.png" className='mr-2 cursor-pointer'onClick={()=>{setRating(0); setPopularity(-1)}}/>
                     </div>
                   </th>
                   <th
@@ -81,32 +180,31 @@ function Favourites() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {people.map((person) => (
+                {filteredMovies.map((person) => (
                   <tr key={person.email}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <img className="h-10 w-10 rounded-full" src={person.image} alt="" />
+                        <div className="flex-shrink-0 h-50 w-100">
+                          <img className="h-20 w-100 " src={`https://image.tmdb.org/t/p/original${person.backdrop_path}`} alt="" />
+                          
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{person.name}</div>
-                          <div className="text-sm text-gray-500">{person.email}</div>
+                        <div className="text-sm font-medium text-gray-900">{person.title}</div>
+                          {/* <div className="text-sm text-gray-500">{person.popularity}</div> */}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{person.title}</div>
-                      <div className="text-sm text-gray-500">{person.department}</div>
+                      <div className="text-sm text-gray-900">{person.vote_average}</div>
+                      {/* <div className="text-sm text-gray-500">{person.popularity}</div> */}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
+                    <div className="text-sm text-gray-900">{person.popularity}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{person.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                        Edit
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{genreids[person.genre_ids[0]]}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <a href="#" className="text-red-600 hover:text-red-900" onClick={()=>delMov(person)}>
+                        Delete
                       </a>
                     </td>
                   </tr>
@@ -120,7 +218,7 @@ function Favourites() {
    </div>
 
    <div className='mt-4 '>
-     <Pagination/>
+     <Pagination page={currPage} moveForward={goAhead} moveBackward={goBack}/>
    </div>
      </>
   )
